@@ -32,10 +32,13 @@ def main():
     # loop through each project
     for path_project in paths_projects:
         print('fixing %s ...' % Path(path_project).stem)
-        is_fix_needed = fix_json(path_project)
-        if is_fix_needed:
-            fix_macro(path_project)
-        print('\t...Done')
+        try:
+            is_fix_needed = fix_json(path_project)
+            if is_fix_needed:
+                fix_macro(path_project)
+            print('\t...Done')
+        except Exception as e:
+            print('\tERROR OCCURRED: %s' % e)
 
 
 def fix_json(path_project: str):
