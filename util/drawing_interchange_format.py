@@ -165,10 +165,10 @@ class _Line:
                 points = self.arc_to_line(ent)
 
             else:
-                raise Exception('ERROR: unknown mode encountered %s @ %s' %
-                                (ent.mode, path))
+                raise Exception('ERROR (%s): unknown mode encountered %s' %
+                                (path, ent.mode))
         elif ent.dxftype == 'CIRCLE':
-            angle = np.linspace(0, 2*np.pi, settings.DXF.n_arc)
+            angle = np.linspace(0, 2 * np.pi, settings.DXF.n_arc)
             x = ent.radius * np.cos(angle)
             y = ent.radius * np.sin(angle)
             points = np.vstack([x, y]).T
