@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import json
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import numpy as np
 
 import settings
 from util.complex_field_per_antenna import REAL, IMAG, ComplexFieldPerAntenna
+from .print import Print
 
 
 class MeanSquareField:
@@ -25,11 +27,17 @@ class MeanSquareField:
     generated.
     """
 
-    def __init__(self, path_project: Path, cfa_obj: ComplexFieldPerAntenna):
+    def __init__(
+            self,
+            path_project: Path,
+            cfa_obj: ComplexFieldPerAntenna,
+            print_: Print.log
+    ):
         self.cfa_obj = cfa_obj
         self.folder = path_project.joinpath('msf')
         self.path_configuration = self.folder.joinpath('configuration.json')
         self.configurations = []
+        self.print_ = print_
 
         # pre-allocate space
         self.cfa = np.zeros(cfa_obj.cfa.shape)
@@ -43,6 +51,9 @@ class MeanSquareField:
         self.n_phaseshifts = None
         self.filename = None
         self.idx = None
+
+        self.max = 0
+        self.min = 0
 
     def generate_msf(self, idx: int) -> MeanSquareField:
         # generate random phases, note that phase of first antenna is 0
@@ -103,9 +114,35 @@ class MeanSquareField:
             json.dump(self.configurations, file)
 
     def to_img(self) -> np.ndarray:
+        # reshape msf to img-width/height
         img_shape = (settings.Img.width, settings.Img.height)
-        img_scaled = 255 * self.msf.reshape(img_shape) * settings.MSF.scalar
-        return img_scaled.astype(np.uint8)
+        msf = self.msf.reshape(img_shape)
+
+        # use dB scale
+        msf = 10 * np.log10(msf)
+
+        # set min max
+        if np.max(msf) > self.max:
+            self.max = np.max(msf)
+        if np.min(msf) < self.min:
+            self.min = np.min(msf)
+
+        # log if msf exceeds maximum given in settings
+        if np.max(msf) > settings.MSF.db_max:
+            self.print_('WARNING: normalised MSF exceeds 1.0\n'
+                        '\tdb_msf_max=%f\n\tsettings db_max=%f' %
+                        (np.max(msf), 1 / settings.MSF.db_max))
+
+        # clip
+        msf[msf < settings.MSF.db_min] = settings.MSF.db_min
+        msf[msf > settings.MSF.db_max] = settings.MSF.db_max
+
+        # map to range [0, 255]
+        a = (settings.MSF.db_max - settings.MSF.db_min)
+        msf = 255 * (msf - settings.MSF.db_min) / a
+
+        # return msf as img
+        return msf.astype(np.uint8)
 
     def _shift_cfa(self) -> None:
         # todo: find a different solution to slicing, since that will return

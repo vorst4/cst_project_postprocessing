@@ -1,13 +1,17 @@
-from numpy import pi
 import os
+
+from numpy import pi, log10, array
 
 is_running_on_desktop = os.name == 'nt'
 
+delta = 1e-20
+
 
 class Paths:
-    root = 'C:/Users/Dennis/Documents/generated_projects'
-    src = ''
-    dst = 'data.zip'
+    if is_running_on_desktop:
+        root = 'C:/Users/Dennis/Documents/generated_projects'
+    else:
+        root = '/home/tue/s111167/generated_projects'
 
 
 class Img:
@@ -16,14 +20,20 @@ class Img:
 
 
 class MSF:
-    scalar = 1 / 10e3
+    db_min = -10
+    db_max = 80
     n = 3200
     phase_limit = [0., 2. * pi]
     amplitude_limit = [0., 1.]
 
 
+class SAR:
+    db_max = 10
+    db_min = -60
+
+
 class DXF:
-    background = (135, 206, 250)
+    background = array([250., 206., 135.])  # BLUE, GREEN, RED
     n_arc = 1000  # number of points used to approximate an arc
     scalar_permittivity = 1. / 80
     scalar_density = 1. / 2160

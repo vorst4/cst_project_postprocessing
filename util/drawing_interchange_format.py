@@ -3,6 +3,7 @@ from zipfile import ZipFile
 
 from pathlib import Path
 import cv2
+from PIL import Image
 import dxfgrabber
 import numpy as np
 from PIL import Image
@@ -26,6 +27,8 @@ class DrawingInterchangeFormat:
         self.materials = materials
         self.mm_per_px = None
         self.material_obj_names = []
+        self.map_den = None
+        self.map_con = None
         for material in materials:
             self.material_obj_names.append(material['object_name'].upper())
 
@@ -98,7 +101,7 @@ class DrawingInterchangeFormat:
         for _, obj in objects.items():
             obj.combine_lines(0.1)
 
-        # create empty permittivity, conductivity & density maps
+        # create empty permittivity, conductivity & density images
         img_shape = (settings.Img.height, settings.Img.width)
         img_shape_col = (settings.Img.height, settings.Img.width, 3)
         img_mod = np.ones(img_shape_col, np.uint8) * settings.DXF.background
@@ -106,10 +109,13 @@ class DrawingInterchangeFormat:
         img_con = np.ones(img_shape, np.uint8) * settings.DXF.con0
         img_den = np.ones(img_shape, np.uint8) * settings.DXF.den0
 
-        # draw shapes in the maps
+        # draw shapes in the images
         for name, obj in objects.items():
             m = self.materials[self.material_obj_names.index(name)]
-            cm = (255 * m['red'], 255 * m['green'], 255 * m['blue'])
+            '''
+            WARNING: cv2 uses BGR instead of RGB !!!
+            '''
+            cm = (255 * m['blue'], 255 * m['green'], 255 * m['red'])
             cp = 255 * m['permittivity'] * settings.DXF.scalar_permittivity
             cc = 255 * m['conductivity'] * settings.DXF.scalar_conductivity
             cd = 255 * m['density'] * settings.DXF.scalar_density
@@ -120,6 +126,21 @@ class DrawingInterchangeFormat:
                 cv2.fillPoly(img_per, pnts, color=cp)
                 cv2.fillPoly(img_con, pnts, color=cc)
                 cv2.fillPoly(img_den, pnts, color=cd)
+
+        # same but for the maps
+        self.map_con = np.ones(img_shape) * settings.DXF.con0
+        self.map_den = np.ones(img_shape) * settings.DXF.den0
+
+        # draw shapes in the images
+        for name, obj in objects.items():
+            m = self.materials[self.material_obj_names.index(name)]
+            cc = m['conductivity']
+            cd = m['density']
+
+            for line in obj.lines:
+                pnts = [line.pixels(self.mm_per_px)]
+                cv2.fillPoly(self.map_con, pnts, color=cc)
+                cv2.fillPoly(self.map_den, pnts, color=cd)
 
         return {'mod': img_mod, 'per': img_per, 'con': img_con, 'den': img_den}
 
