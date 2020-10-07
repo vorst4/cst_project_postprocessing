@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from pathlib import Path
 
@@ -55,7 +53,7 @@ class MeanSquareField:
         self.max = 0
         self.min = 0
 
-    def generate_msf(self, idx: int) -> MeanSquareField:
+    def generate_msf(self, idx: int):
         # generate random phases, note that phase of first antenna is 0
         self.phases = np.random.uniform(
             low=settings.MSF.phase_limit[0],
