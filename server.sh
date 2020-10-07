@@ -32,7 +32,6 @@ declare -a partitions=("tue.default.q"
                        "elec.gpu.q"
                        "elec-em.gpu.q")
 
-
 # execute jobs
 for (( job_id=0; job_id<$1; job_id++ ))
 do
@@ -41,7 +40,7 @@ do
   sbatch  --job-name=CST_project_generator_$job_id_$2 \
           --nodes=1 \
           --ntasks=1 \
-          --cpus-per-task=8 \
+          --cpus-per-task=1 \
           --time=10-00:00:00 \
           --partition=${partitions[$2]} \
           --output=output \
