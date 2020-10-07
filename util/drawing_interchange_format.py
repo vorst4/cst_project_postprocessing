@@ -147,28 +147,34 @@ class DrawingInterchangeFormat:
 
 class _Line:
     def __init__(self, ent):
-        if ent.dxftype != 'POLYLINE':
-            # todo: remove
-            raise Exception('%s not a polyline %s', (path, ent.dxftype))
-        if ent.mode == 'spline2d':
+        if ent.dxftype == 'POLYLINE':
+            if ent.mode == 'spline2d':
 
-            # obtain points
-            points = np.array(ent.points)
+                # obtain points
+                points = np.array(ent.points)
 
-            # discard unused dimension
-            points = points[:, [0, 1]]
+                # discard unused dimension
+                points = points[:, [0, 1]]
 
-            # swap columns, so that x: width, z:height
-            points[:, 0], points[:, 1] = points[:, 1], points[:, 0].copy()
+                # swap columns, so that x: width, z:height
+                points[:, 0], points[:, 1] = points[:, 1], points[:, 0].copy()
 
-        elif ent.mode == 'polyline2d':
-            # only occurrence of this should be the circular boundary
-            # with radius r, located at the center (0,0)
-            points = self.arc_to_line(ent)
+            elif ent.mode == 'polyline2d':
+                # only occurrence of this should be the circular boundary
+                # with radius r, located at the center (0,0)
+                points = self.arc_to_line(ent)
 
+            else:
+                raise Exception('ERROR: unknown mode encountered %s @ %s' %
+                                (ent.mode, path))
+        elif ent.dxftype == 'CIRCLE':
+            angle = np.linspace(0, 2*np.pi, settings.DXF.n_arc)
+            x = ent.radius * np.cos(angle)
+            y = ent.radius * np.sin(angle)
+            points = np.vstack([x, y]).T
         else:
-            raise Exception('ERROR: unknown mode encountered %s @ %s' %
-                            (ent.mode, path))
+            raise Exception('ERROR: (%s) not a polyline or circle, %s' %
+                            (path, ent.dxftype))
 
         self.points = points
 
