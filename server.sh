@@ -39,7 +39,7 @@ do
   export job_id=$job_id
   export n_jobs=$1
   export partition_id=$2
-  sbatch  --job-name=project_postproceser_\$job_id_\$2 \
+  sbatch  --job-name=project_postproceser_$job_id\_$2 \
           --nodes=1 \
           --ntasks=1 \
           --cpus-per-task=1 \
