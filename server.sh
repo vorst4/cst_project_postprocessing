@@ -8,9 +8,10 @@ then
 fi
 
 # verify that only 1 argument is passed
-if [ $# -gt 1 ]
+if [ $# -gt 2 ]
 then
   echo "ERROR: $# arguments are given, only 1 is required"
+  exit 1
 fi
 
 # verify that number of partitions is not > 3
