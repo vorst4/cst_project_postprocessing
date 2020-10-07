@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from pathlib import Path
 
@@ -24,7 +22,7 @@ class SpecificAbsorptionRate:
             msf_obj: MeanSquareField,
             map_density,
             map_conductivity
-    ) -> SpecificAbsorptionRate:
+    ):
         delta = 1e-20
         self.msf = msf_obj
         img_shape = (settings.Img.width, settings.Img.height)
