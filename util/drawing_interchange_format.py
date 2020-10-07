@@ -1,19 +1,19 @@
-import io
-from zipfile import ZipFile
-
 from pathlib import Path
+
 import cv2
-from PIL import Image
 import dxfgrabber
 import numpy as np
-from PIL import Image
 
 import settings
+
+path = None  # todo: remove
 
 
 class DrawingInterchangeFormat:
 
     def __init__(self, path_project: Path, materials: dict):
+        global path  # todo: remove
+        path = path_project  # todo: remove
         self.dxf = dxfgrabber.readfile(path_project.joinpath('model2d.dxf'))
         self.folder = path_project.joinpath('maps')
         self.filenames = {
@@ -147,6 +147,9 @@ class DrawingInterchangeFormat:
 
 class _Line:
     def __init__(self, ent):
+        if ent.dxftype != 'POLYLINE':
+            # todo: remove
+            raise Exception('%s not a polyline %s', (path, ent.dxftype))
         if ent.mode == 'spline2d':
 
             # obtain points
@@ -164,8 +167,8 @@ class _Line:
             points = self.arc_to_line(ent)
 
         else:
-            raise Exception('ERROR: unknown mode encountered %s' %
-                            ent.mode)
+            raise Exception('ERROR: unknown mode encountered %s @ %s' %
+                            (ent.mode, path))
 
         self.points = points
 
@@ -205,20 +208,30 @@ class _Line:
         for v1, v2 in zip(ent.vertices[:-1], ent.vertices[1:]):
             d = _distance_3d(v1.location, v2.location)
             angle = 4 * np.arctan(v1.bulge)
-            r = np.abs(d / (2 * np.sin(0.5 * angle)))
 
-            # convert each location to angle relative to origin (0, 0)
-            theta_start = np.arctan2(v1.location[0], v1.location[1])
-            theta_end = theta_start - angle
+            # arc
+            if v1.bulge != 0:
+                r = np.abs(d / (2 * np.sin(0.5 * angle)))
 
-            # generate points
-            theta = np.linspace(theta_start, theta_end, settings.DXF.n_arc)
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-            xy = np.vstack([x, y]).T
+                # convert each location to angle relative to origin (0, 0)
+                theta_start = np.arctan2(v1.location[0], v1.location[1])
+                theta_end = theta_start - angle
 
-            # add points to list
-            points = np.append(points, xy, 0)
+                # generate points
+                theta = np.linspace(theta_start, theta_end, settings.DXF.n_arc)
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
+                xy = np.vstack([x, y]).T
+
+                # add points to list
+                points = np.append(points, xy, 0)
+
+            # bulge == 0 is basically a straight line
+            if v1.bulge == 0:
+                xyz = np.linspace(v1.location,
+                                  v2.location,
+                                  settings.DXF.n_arc)
+                points = np.append(points, xyz[:, :2], 0)
 
         # return points
         return points

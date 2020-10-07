@@ -34,34 +34,34 @@ def postprocess_project(print_: Print.log, path_project: Path) -> None:
     # generate and save model/permittivity/conductivity/density map
     dxf.save(cfa.mm_per_px)
 
-    # create msf object from cfa
-    msf = MeanSquareField(path_project, cfa, print_)
+    # # create msf object from cfa
+    # msf = MeanSquareField(path_project, cfa, print_)
+    #
+    # # create sar object
+    # sar = SpecificAbsorptionRate(print_)
 
-    # create sar object
-    sar = SpecificAbsorptionRate(print_)
-
-    # iteratively generate a msf map with random phases/amplitudes and save it
-    pct = 0
-    pct_step = 10
-    print_('\tgenerating MSF maps (%i)' % settings.MSF.n)
-    for idx in range(settings.MSF.n):
-        # log
-        if idx / settings.MSF.n > 0.01 * pct:
-            print_('\t\t%i%%' % pct)
-            pct += pct_step
-        # generate msf and save it
-        msf.generate_msf(idx).save_map()
-        sar.generate_sar(msf, dxf.map_den, dxf.map_con).save_map()
-
-    # log
-    print_('\t\t100%')
-    print_('\tMSF range = [%f, %f]' % (msf.min, msf.max))
-    print_('\tSAR range = [%f, %f]' % (sar.min, sar.max))
-
-    # save msf configuration (filenames, phases & amplitudes)
-    print_('\tsaving msf/sar configurations')
-    msf.save_configurations()
-    sar.save_configurations(msf)
+    # # iteratively generate a msf map with random phases/amplitudes and save it
+    # pct = 0
+    # pct_step = 10
+    # print_('\tgenerating MSF maps (%i)' % settings.MSF.n)
+    # for idx in range(settings.MSF.n):
+    #     # log
+    #     if idx / settings.MSF.n > 0.01 * pct:
+    #         print_('\t\t%i%%' % pct)
+    #         pct += pct_step
+    #     # generate msf and save it
+    #     msf.generate_msf(idx).save_map()
+    #     sar.generate_sar(msf, dxf.map_den, dxf.map_con).save_map()
+    #
+    # # log
+    # print_('\t\t100%')
+    # print_('\tMSF range = [%f, %f]' % (msf.min, msf.max))
+    # print_('\tSAR range = [%f, %f]' % (sar.min, sar.max))
+    #
+    # # save msf configuration (filenames, phases & amplitudes)
+    # print_('\tsaving msf/sar configurations')
+    # msf.save_configurations()
+    # sar.save_configurations(msf)
 
 
 def get_project_paths(job_id: int, n_jobs: int) -> List[Path]:

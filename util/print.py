@@ -20,7 +20,7 @@ class Print:
 
         # make sure file exists
         print(self.path_log)
-        with open(self.path_log, 'a') as file:
+        with open(self.path_log, 'w') as file:
             file.write('')
 
         # write system info
