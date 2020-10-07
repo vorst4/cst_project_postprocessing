@@ -37,6 +37,7 @@ declare -a partitions=("tue.default.q"
 for (( job_id=0; job_id<$1; job_id++ ))
 do
   export job_id=$job_id
+  export n_jobs=$1
   export partition_id=$2
   sbatch  --job-name=CST_project_generator_$job_id_$2 \
           --nodes=1 \
