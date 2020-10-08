@@ -45,8 +45,8 @@ do
           --cpus-per-task=1 \
           --time=10-00:00:00 \
           --partition=${partitions[$2]} \
-          --output=output \
-          --error=error \
+          --output=output_$job_id\_$2 \
+          --error=error_$job_id\_$2 \
           --mail-user=d.m.n.v.d.vorst@student.tue.nl \
           --mail-type=ALL \
           task.sh
