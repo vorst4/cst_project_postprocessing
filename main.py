@@ -38,10 +38,13 @@ for idx, path_project in enumerate(paths_project):
            (idx + 1, n_projects, path_project))
 
     # post-process project
-    try:
+    if settings.is_running_on_desktop:
         postprocess_project(print_, path_project)
-    except Exception as e:
-        raise type(e)(str(e) + '\nOccurs in file %s' % path_project)
+    else:
+        try:
+            postprocess_project(print_, path_project)
+        except Exception as e:
+            raise type(e)(str(e) + '\nOccurs in file %s' % path_project)
 
     # log
     print_('...FINISHED IN %.2f MINUTES' % ((time() - timer)/60))
