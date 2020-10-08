@@ -44,10 +44,18 @@ class SpecificAbsorptionRate:
         # use db scale
         sar = 10 * np.log10(self.sar + delta)
 
-        # save min/max value
+        # save max sar value
         if np.max(sar) > self.max:
             self.max = np.max(sar)
-        min_ = np.min(sar[sar != 10*np.log10(delta)])  # ignore sar == 0
+
+        # save min sar value
+        #   but only the non-zero sar-values -> dB[delta] is considered zero.
+        sar_nonzero = sar[sar != 10*np.log10(delta)]
+        if len(sar_nonzero) != 0:
+            min_ = np.min(sar_nonzero)
+        #   On very rare occasions, sar is zero everywhere
+        else:
+            min_ = 10*np.log10(delta)
         if min_ < self.min:
             self.min = min_
 
